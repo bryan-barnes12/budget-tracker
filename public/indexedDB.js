@@ -27,21 +27,25 @@ function checkDatabase() {
   const store = transaction.objectStore('budgetStore');
   const storeContents = store.getAll();
   storeContents.onsuccess = async function () {
-    if (storeContents.result.length > 0 && navigator.onLine) {
-      const bulkPost = await fetch('/api/transaction/bulk', {
-          method: 'POST',
-          body: JSON.stringify(storeContents.result),
-          headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            },
-        });
-        const jsonResponse = bulkPost.json();
-        if (jsonResponse.length !== 0) {
-            transaction = db.transaction(['budgetStore'], 'readwrite');
-            const currentStore = transaction.objectStore('budgetStore');
-            currentStore.clear();
-        }
+    try {
+      if (storeContents.result.length > 0 && navigator.onLine) {
+        const bulkPost = await fetch('/api/transaction/bulk', {
+            method: 'POST',
+            body: JSON.stringify(storeContents.result),
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+          });
+          const jsonResponse = bulkPost.json();
+          if (jsonResponse.length !== 0) {
+              transaction = db.transaction(['budgetStore'], 'readwrite');
+              const currentStore = transaction.objectStore('budgetStore');
+              currentStore.clear();
+          }
+      }
+    } catch (err) {
+      console.log(err)
     }
   };
 }
